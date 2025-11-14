@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"unicode"
 )
@@ -12,6 +13,7 @@ var ErrorUnreachable = errors.New("unreachable")
 
 type TokenKind int
 
+// TODO:
 const (
 	// Keywords
 	TK_Add TokenKind = iota
@@ -59,6 +61,28 @@ type Token struct {
 
 func (t Token) String() string {
 	return fmt.Sprintf("{0x%X => %s}", t.Kind, t.Word)
+}
+
+func (t Token) ToHex() (int8, error) {
+	switch t.Kind {
+	case TK_Add, TK_Push, TK_Eof:
+		return int8(t.Kind), nil
+	case TK_Hex:
+		chopped := strings.TrimPrefix(t.Word, "0x")
+		parsed, err := strconv.ParseInt(chopped, 16, 8)
+		if err != nil {
+			return 0x0, nil
+		}
+		return int8(parsed), nil
+	case TK_Int:
+		parsed, err := strconv.ParseInt(t.Word, 10, 8)
+		if err != nil {
+			return 0x0, err
+		}
+		return int8(parsed), nil
+	default:
+		return 0x0, ErrorUnreachable
+	}
 }
 
 type Lexer struct {
@@ -140,4 +164,31 @@ func (lex *Lexer) readNum() (int, error) {
 		read += 1
 	}
 	return read, nil
+}
+
+// Program
+type Program []int8
+
+func (l Lexer) MakeProgram() (Program, error) {
+	program := make(Program, 0)
+
+	for {
+		token, err := l.Next()
+		if err != nil {
+			return program, err
+		}
+
+		hex, err := token.ToHex()
+		if err != nil {
+			return program, err
+		}
+
+		program = append(program, hex)
+
+		if token.Kind == TK_Eof {
+			break
+		}
+	}
+
+	return program, nil
 }

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/mewfinity06/mewvm/lexer"
+	"github.com/mewfinity06/mewvm/runner"
 )
 
 func main() {
@@ -20,19 +20,16 @@ func main() {
 	}
 
 	l := lexer.NewLexer(content)
-	tokens := make([]lexer.Token, 0)
-	for {
-		token, err := l.Next()
-		if err != nil {
-			log.Fatal(err)
-		}
-		tokens = append(tokens, *token)
-		if token.Kind == lexer.TK_Eof {
-			break
-		}
+
+	program, err := l.MakeProgram()
+	if err != nil {
+		log.Fatal(err)
 	}
 
-	for i, token := range tokens {
-		fmt.Printf("%d: %v\n", i, token)
+	r := runner.NewRunner(program)
+
+	_, err = r.Run(true)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
