@@ -13,11 +13,11 @@ var (
 )
 
 type Lexeme interface {
-	ToHex() int
+	ToHex() byte
 }
 
 // Register
-type Register int
+type Register byte
 
 const (
 	Reg_A Register = iota
@@ -29,12 +29,12 @@ const (
 	Reg_Count // add one
 )
 
-func (r Register) ToHex() int {
-	return int(r)
+func (r Register) ToHex() byte {
+	return byte(r)
 }
 
 // Instruction
-type Instuction int
+type Instuction byte
 
 const (
 	// Math instructions
@@ -45,12 +45,12 @@ const (
 	Inst_Pop  // pop  (reg <r>)
 )
 
-func (i Instuction) ToHex() int {
-	return int(i)
+func (i Instuction) ToHex() byte {
+	return byte(i)
 }
 
 // Operand
-type Operand int
+type Operand byte
 
 const (
 	Op_Hex Operand = iota
@@ -59,8 +59,8 @@ const (
 	Op_EOF
 )
 
-func (o Operand) ToHex() int {
-	return int(o)
+func (o Operand) ToHex() byte {
+	return byte(o)
 }
 
 // Token type
