@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
 	"github.com/mewfinity06/mewvm/lexer"
-	"github.com/mewfinity06/mewvm/runner"
 )
 
 func main() {
@@ -19,17 +19,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	l := lexer.NewLexer(content)
-
-	program, err := l.MakeProgram()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	r := runner.NewRunner(program)
-
-	_, err = r.Run(true)
-	if err != nil {
-		log.Fatal(err)
+	l := lexer.LexerNew(content)
+	for {
+		token, err := l.Next()
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(token)
+		if token.Lexme == lexer.Op_EOF {
+			break
+		}
 	}
 }
