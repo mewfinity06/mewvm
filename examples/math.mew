@@ -1,3 +1,4 @@
 push 0x1
 push 0x2
 add
+pop reg a
