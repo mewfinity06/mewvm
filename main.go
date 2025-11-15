@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/mewfinity06/mewvm/lexer"
+	"github.com/mewfinity06/mewvm/packer"
 )
 
 func main() {
@@ -20,14 +21,11 @@ func main() {
 	}
 
 	l := lexer.LexerNew(content)
-	for {
-		token, err := l.Next()
-		if err != nil {
-			log.Fatal(err)
-		}
-		fmt.Println(token)
-		if token.Lexme == lexer.Op_EOF {
-			break
-		}
+
+	program, err := packer.Pack(l)
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	fmt.Printf("Program: %v\n", program)
 }
