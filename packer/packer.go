@@ -14,8 +14,15 @@ func Pack(l lexer.Lexer) (Program, error) {
 		if err != nil {
 			return res, err
 		}
-		res = append(res, byte(token.Lexme.ToHex()))
-		if token.Lexme == lexer.Op_EOF {
+		// res = append(res, byte(token.Lexme.ToHex()))
+		switch token.Lexme {
+		case lexer.Op_Hex, lexer.Op_Int:
+			res = append(res, token.Value)
+		default:
+			res = append(res, byte(token.Lexme.ToHex()))
+		}
+
+		if token.Lexme == lexer.Inst_EOF {
 			break
 		}
 	}

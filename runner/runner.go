@@ -1,80 +1,48 @@
 package runner
 
-// import (
-// "errors"
-// "fmt"
-//
-// "github.com/mewfinity06/mewvm/lexer"
-// )
-//
-// var (
-// ErrorStackUnderflow = errors.New("stack underflow")
-// ErrorStackOverflow  = errors.New("stack overflow")
-// )
-//
-// const StackSize = 8
-//
-// type Register int
-//
-// const (
-// Reg_A Register = iota
-// Reg_B
-// Reg_C
-//
-// Reg_Math
-//
-// RegCount
-// )
-//
-// type Runner struct {
-// Program   lexer.Program
-// Stack     [StackSize]int
-// Registers [RegCount]Register
-//
-// sp int
-// }
-//
-// func NewRunner(program lexer.Program) Runner {
-// return Runner{program, [StackSize]int{}, [RegCount]Register{}, 0}
-// }
-//
-// func (r *Runner) Run() (int, error) {
-// i := 0
-// for ; i < len(r.Program); i++ {
-// switch inst := r.Program[i]; inst {
-// case int(lexer.TK_Add):
-// if r.sp < 2 {
-// return i, ErrorStackUnderflow
-// }
-//
-// Get and reset a
-// a := r.Stack[r.sp]
-// r.Stack[r.sp] = 0
-// r.sp -= 1
-//
-// Get and reset b
-// b := r.Stack[r.sp]
-// r.Stack[r.sp] = 0
-// r.sp -= 1
-//
-// Set result
-// r.Stack[r.sp] = b + a
-//
-// case int(lexer.TK_Push):
-// if r.sp+1 >= StackSize { // r.sp+1 is for zero index
-// return i, ErrorStackOverflow
-// }
-// i += 1
-// op := r.Program[i]
-// r.Stack[r.sp] = op
-// r.sp += 1
-//
-// case int(lexer.TK_Pop):
-// case int(lexer.TK_Eof): // eof does nothing
-// default:
-// return i, fmt.Errorf("unhandled inst: 0x%X", inst)
-// }
-// }
-// return i, nil
-// }
-//
+import (
+	"fmt"
+
+	"github.com/mewfinity06/mewvm/lexer"
+	"github.com/mewfinity06/mewvm/packer"
+)
+
+type Runner struct {
+	Prog packer.Program
+}
+
+func RunnerNew(prog packer.Program) Runner {
+	return Runner{prog}
+}
+
+func (r Runner) Run() (int, error) {
+	i := 0
+	return i, nil
+}
+
+func (r Runner) PrintProgram() {
+	for i := 0; i < len(r.Prog); i++ {
+		switch inst := lexer.Instruction(r.Prog[i]); inst {
+		case lexer.Inst_Push:
+			fmt.Print("push ")
+			i += 1
+			op := r.Prog[i]
+			fmt.Printf("0x%X\n", op)
+		case lexer.Inst_Add:
+			fmt.Println("add")
+		case lexer.Inst_Pop:
+			fmt.Print("pop ")
+			i += 1
+			switch reg := lexer.Register(r.Prog[i]); reg {
+			case lexer.Reg_A:
+				fmt.Println("A")
+			default:
+				fmt.Printf("unhandled register: 0x%X\n", reg.ToHex())
+			}
+		case lexer.Inst_EOF:
+			fmt.Println("eof")
+		default:
+			fmt.Printf("unhandled instruction: 0x%d\n", inst)
+		}
+	}
+}

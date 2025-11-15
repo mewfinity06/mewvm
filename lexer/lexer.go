@@ -26,7 +26,7 @@ const (
 
 	Reg_Math
 	Reg_Zero
-	Reg_Count // add one
+	Reg_Count // NOT FOR USE
 )
 
 func (r Register) ToHex() byte {
@@ -34,18 +34,23 @@ func (r Register) ToHex() byte {
 }
 
 // Instruction
-type Instuction byte
+type Instruction byte
 
 const (
+	Inst_Nop Instruction = iota
+	Inst_Halt
+
 	// Math instructions
-	Inst_Add Instuction = iota
+	Inst_Add
 
 	// Stack instructions
 	Inst_Push // push <operand>
 	Inst_Pop  // pop  (reg <r>)
+
+	Inst_EOF
 )
 
-func (i Instuction) ToHex() byte {
+func (i Instruction) ToHex() byte {
 	return byte(i)
 }
 
@@ -55,8 +60,6 @@ type Operand byte
 const (
 	Op_Hex Operand = iota
 	Op_Int
-
-	Op_EOF
 )
 
 func (o Operand) ToHex() byte {
@@ -67,10 +70,11 @@ func (o Operand) ToHex() byte {
 type Token struct {
 	Lexme Lexeme
 	Word  string
+	Value byte
 }
 
 var Token_EOF = Token{
-	Lexme: Op_EOF,
+	Lexme: Inst_EOF,
 	Word:  "eof",
 }
 
@@ -111,38 +115,45 @@ func (l *Lexer) Next() (*Token, error) {
 		reg := l.Content[l.Cur]
 		switch reg := string(reg); reg {
 		case "a", "A":
-			return &Token{Reg_A, reg}, nil
+			return &Token{Reg_A, reg, 0}, nil
 		case "b", "B":
-			return &Token{Reg_B, reg}, nil
+			return &Token{Reg_B, reg, 0}, nil
 		case "c", "C":
-			return &Token{Reg_C, reg}, nil
+			return &Token{Reg_C, reg, 0}, nil
 		case "math", "Math":
-			return &Token{Reg_Math, reg}, nil
+			return &Token{Reg_Math, reg, 0}, nil
 		case "zero", "Zero":
-			return &Token{Reg_Zero, reg}, nil
+			return &Token{Reg_Zero, reg, 0}, nil
 		default:
 			return nil, fmt.Errorf("unknown register: %s", reg)
 		}
 	// Instructions
+	case "nop":
+		return &Token{Inst_Nop, word, 0}, nil
+	case "halt":
+		return &Token{Inst_Halt, word, 0}, nil
 	case "add":
-		return &Token{Inst_Add, word}, nil
+		return &Token{Inst_Add, word, 0}, nil
 	case "push":
-		return &Token{Inst_Push, word}, nil
+		return &Token{Inst_Push, word, 0}, nil
 	case "pop":
-		return &Token{Inst_Pop, word}, nil
+		return &Token{Inst_Pop, word, 0}, nil
 	default:
 		// Operands
 		// -- Hex
 		if strings.HasPrefix(word, "0x") {
-			// TODO: Better error checking
-			return &Token{Op_Hex, word}, nil
+			if value, err := strconv.ParseInt(word[2:], 16, 0); err == nil {
+				return &Token{Op_Hex, word, byte(value)}, nil
+			} else {
+				return nil, err
+			}
 		}
 
 		// -- Int
-		if _, err := strconv.ParseInt(word, 10, 0); err == nil {
-			return &Token{Op_Int, word}, nil
+		if value, err := strconv.ParseInt(word, 10, 0); err == nil {
+			return &Token{Op_Int, word, byte(value)}, nil
+		} else {
+			return nil, err
 		}
-
-		return nil, fmt.Errorf("unknown word: %s", word)
 	}
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/mewfinity06/mewvm/lexer"
 	"github.com/mewfinity06/mewvm/packer"
+	"github.com/mewfinity06/mewvm/runner"
 )
 
 func main() {
@@ -22,10 +23,13 @@ func main() {
 
 	l := lexer.LexerNew(content)
 
-	program, err := packer.Pack(l)
+	prog, err := packer.Pack(l)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Program: %v\n", program)
+	fmt.Println(prog)
+
+	r := runner.RunnerNew(prog)
+	r.PrintProgram()
 }
